@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Agenda Kawaii</title>
+  <style>
+    :root {
+      --pink: #ffb7c5;
+      --pink-dark: #ff6f91;
+      --pink-light: #fff0f3;
+      --red: #ff4b5c;
+      --lilac: #d9c2ff;
+      --mint: #b8f0dc;
+      --text: #4a3f4f;
+      --glass: rgba(255, 255, 255, 0.75);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif; }
+
+    body {
+      min-height: 100vh;
+      color: var(--text);
+      background: linear-gradient(135deg, #ffd6e0, #e8d4ff, #c9f0ff, #ffd6e0);
+      background-size: 400% 400%;
+      animation: bgMove 18s ease infinite;
+      display: flex;
+      justify-content: center;
+      padding: 24px 16px 60px;
+      overflow-x: hidden;
+    }
+    @keyframes bgMove { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+    /* Decoración flotante */
+    .floaty {
+      position: fixed;
+      bottom: -40px;
+      font-size: 1.6rem;
+      opacity: 0.7;
+      pointer-events: none;
+      animation: floatUp linear infinite;
+      z-index: 0;
+    }
+    @keyframes floatUp {
+      to { transform: translateY(-115vh) rotate(360deg); opacity: 0; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 3px solid #fff;
+      border-radius: 28px;
+      box-shadow: 0 15px 40px rgba(255, 111, 145, 0.3);
+      padding: 28px 24px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      background: linear-gradient(90deg, #ff6f91, #b57cff, #ff6f91);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: shine 4s linear infinite;
+    }
+    @keyframes shine { to { background-position: 200% center; } }
+
+    .subtitle { text-align: center; font-size: 0.9rem; margin: 4px 0 8px; opacity: 0.8; }
+    .mascot { display: block; text-align: center; font-size: 2.6rem; animation: bounce 2s ease-in-out infinite; }
+    @keyframes bounce { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-8px) rotate(4deg); } }
+
+    .stats {
+      display: flex; gap: 10px; margin: 14px 0 18px;
+    }
+    .stat {
+      flex: 1; text-align: center; padding: 8px;
+      background: #fff; border-radius: 14px; border: 2px dashed var(--pink);
+      font-size: 0.8rem;
+    }
+    .stat b { display: block; font-size: 1.4rem; color: var(--pink-dark); }
+
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-weight: bold; color: var(--pink-dark); margin-bottom: 5px; font-size: 0.9rem; }
+
+    input, select {
+      width: 100%; padding: 11px 12px; font-size: 1rem;
+      border: 2px solid var(--pink); border-radius: 14px;
+      background: #fff; color: var(--text); outline: none;
+      transition: all 0.25s;
+    }
+    input:focus, select:focus {
+      border-color: var(--pink-dark);
+      box-shadow: 0 0 0 4px rgba(255, 111, 145, 0.2);
+      transform: translateY(-1px);
+    }
+    .time-container { display: flex; gap: 8px; }
+    .time-container select { flex: 1; }
+
+    .add-btn {
+      width: 100%; padding: 13px; margin-top: 4px;
+      border: none; border-radius: 16px; cursor: pointer;
+      font-size: 1.05rem; font-weight: bold; color: #fff;
+      background: linear-gradient(90deg, #ff6f91, #ff9ab3);
+      box-shadow: 0 6px 0 #e0577a;
+      transition: all 0.15s;
+    }
+    .add-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #e0577a; }
+    .add-btn:active { transform: translateY(5px); box-shadow: 0 1px 0 #e0577a; }
+
+    .list-title {
+      margin-top: 28px; padding-bottom: 6px;
+      color: var(--pink-dark); font-size: 1.25rem;
+      border-bottom: 3px dotted var(--pink);
+    }
+
+    /* Filtros */
+    .filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
+    .chip {
+      padding: 6px 11px; border-radius: 20px; border: 2px solid var(--pink);
+      background: #fff; color: var(--pink-dark); font-size: 0.8rem; font-weight: bold;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .chip:hover { transform: scale(1.08); }
+    .chip.active { background: var(--pink-dark); color: #fff; border-color: var(--pink-dark); }
+
+    ul { list-style: none; }
+    li {
+      display: flex; align-items: center; gap: 12px;
+      background: #fff; border-radius: 16px; padding: 12px 14px; margin-bottom: 10px;
+      border-left: 8px solid var(--pink-dark);
+      box-shadow: 0 4px 12px rgba(255, 111, 145, 0.15);
+      animation: pop 0.4s cubic-bezier(.2, 1.4, .4, 1);
+      transition: transform 0.2s, opacity 0.3s;
+    }
+    li:hover { transform: translateX(4px) scale(1.01); }
+    li.removing { opacity: 0; transform: translateX(60px) scale(0.8); }
+    li.done { opacity: 0.55; border-left-color: #7fd8b4; }
+    li.done .name { text-decoration: line-through; }
+    @keyframes pop { from { opacity: 0; transform: scale(0.7) translateY(10px); } to { opacity: 1; transform: none; } }
+
+    li[data-day="Lunes"] { border-left-color: #ff8fab; }
+    li[data-day="Martes"] { border-left-color: #ffb36b; }
+    li[data-day="Miércoles"] { border-left-color: #f4d35e; }
+    li[data-day="Jueves"] { border-left-color: #7fd8b4; }
+    li[data-day="Viernes"] { border-left-color: #6cc8ff; }
+    li[data-day="Sábado"] { border-left-color: #b57cff; }
+    li[data-day="Domingo"] { border-left-color: #ff6f91; }
+    li.done { border-left-color: #cfcfcf !important; }
+
+    .check { width: 22px; height: 22px; accent-color: var(--pink-dark); cursor: pointer; flex-shrink: 0; }
+    .info { flex: 1; min-width: 0; }
+    .info .name { font-weight: bold; color: var(--pink-dark); word-break: break-word; }
+    .info .meta { font-size: 0.85rem; margin-top: 2px; }
+
+    .delete-btn {
+      border: none; background: #ffe3e8; border-radius: 10px;
+      width: 34px; height: 34px; cursor: pointer; font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .delete-btn:hover { background: var(--red); transform: rotate(12deg) scale(1.1); }
+
+    .empty { text-align: center; padding: 24px 10px; opacity: 0.7; }
+    .empty span { display: block; font-size: 2.4rem; margin-bottom: 6px; }
+
+    /* Confeti */
+    .confetti {
+      position: fixed; top: -20px; z-index: 99; font-size: 1.3rem; pointer-events: none;
+      animation: fall 1.6s ease-in forwards;
+    }
+    @keyframes fall { to { transform: translateY(105vh) rotate(540deg); opacity: 0; } }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <span class="mascot">🍓</span>
+    <h1>Mi Agenda Kawaii</h1>
+    <p class="subtitle">Organiza tu semana con mucho cariño ✨</p>
+
+    <div class="stats">
+      <div class="stat"><b id="statTotal">0</b>Total</div>
+      <div class="stat"><b id="statPending">0</b>Pendientes</div>
+      <div class="stat"><b id="statDone">0</b>Listas</div>
+    </div>
+
+    <form id="agendaForm">
+      <div class="form-group">
+        <label for="name">💌 Nombre / Cita:</label>
+        <input type="text" id="name" required maxlength="60" placeholder="Ej. Rutina de cuidado">
+      </div>
+
+      <div class="form-group">
+        <label for="day">🌸 Día de la semana:</label>
+        <select id="day" required>
+          <option value="" disabled selected>Selecciona un día</option>
+          <option>Lunes</option><option>Martes</option><option>Miércoles</option>
+          <option>Jueves</option><option>Viernes</option><option>Sábado</option><option>Domingo</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>⏰ Hora (12 horas):</label>
+        <div class="time-container">
+          <select id="hour" required>
+            <option value="" disabled selected>Hora</option>
+          </select>
+          <select id="minute" required>
+            <option value="" disabled selected>Min</option>
+            <option>00</option><option>15</option><option>30</option><option>45</option>
+          </select>
+          <select id="ampm" required>
+            <option>AM</option>
+            <option selected>PM</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="add-btn">➕ Agregar Evento</button>
+    </form>
+
+    <h2 class="list-title">📒 Mis Citas</h2>
+    <div class="filters" id="filters"></div>
+    <ul id="eventsList"></ul>
+  </div>
+
+  <script>
+    const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+    const STORAGE_KEY = 'kittyEvents'; // misma clave: conserva tus citas anteriores
+    const form = document.getElementById('agendaForm');
+    const eventsList = document.getElementById('eventsList');
+    const filtersEl = document.getElementById('filters');
+
+    let events = load();
+    let activeFilter = 'Todos';
+
+    // Llenar horas 01-12
+    const hourSel = document.getElementById('hour');
+    for (let i = 1; i <= 12; i++) {
+      const v = String(i).padStart(2, '0');
+      hourSel.add(new Option(v, v));
+    }
+
+    // Decoración flotante
+    const decor = ['🎀','💖','⭐','🌸','🍓','✨','☁️','🍰'];
+    for (let i = 0; i < 14; i++) {
+      const s = document.createElement('span');
+      s.className = 'floaty';
+      s.textContent = decor[i % decor.length];
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.animationDuration = (10 + Math.random() * 14) + 's';
+      s.style.animationDelay = (-Math.random() * 20) + 's';
+      s.style.fontSize = (1 + Math.random() * 1.4) + 'rem';
+      document.body.appendChild(s);
+    }
+
+    function load() {
+      try {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        return Array.isArray(data) ? data : [];
+      } catch (e) { return []; }
+    }
+    function save() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(events)); } catch (e) {}
+    }
+
+    function toMinutes(time) {
+      const [hm, ap] = time.split(' ');
+      let [h, m] = hm.split(':').map(Number);
+      if (h === 12) h = 0;
+      if (ap === 'PM') h += 12;
+      return h * 60 + m;
+    }
+
+    function escapeHTML(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    function renderFilters() {
+      const options = ['Todos', ...DAYS];
+      filtersEl.innerHTML = '';
+      options.forEach(day => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chip' + (day === activeFilter ? ' active' : '');
+        b.textContent = day === 'Todos' ? '🎀 Todos' : day.slice(0, 3);
+        b.title = day;
+        b.onclick = () => { activeFilter = day; render(); };
+        filtersEl.appendChild(b);
+      });
+    }
+
+    function render() {
+      renderFilters();
+      const list = events
+        .filter(e => activeFilter === 'Todos' || e.day === activeFilter)
+        .sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || toMinutes(a.time) - toMinutes(b.time));
+
+      eventsList.innerHTML = '';
+      if (!list.length) {
+        eventsList.innerHTML = '<div class="empty"><span>🌷</span>Aún no hay citas aquí.<br>¡Agrega una arriba!</div>';
+      }
+      list.forEach(e => {
+        const li = document.createElement('li');
+        li.dataset.id = e.id;
+        li.dataset.day = e.day;
+        if (e.done) li.classList.add('done');
+        li.innerHTML = `
+          <input type="checkbox" class="check" ${e.done ? 'checked' : ''} aria-label="Marcar como lista">
+          <div class="info">
+            <p class="name">${escapeHTML(e.name)}</p>
+            <p class="meta">📅 ${escapeHTML(e.day)} &nbsp;|&nbsp; ⏰ ${escapeHTML(e.time)}</p>
+          </div>
+          <button class="delete-btn" aria-label="Eliminar">🗑️</button>`;
+        li.querySelector('.check').onchange = ev => toggleDone(e.id, ev.target.checked);
+        li.querySelector('.delete-btn').onclick = () => deleteEvent(e.id, li);
+        eventsList.appendChild(li);
+      });
+
+      const done = events.filter(e => e.done).length;
+      document.getElementById('statTotal').textContent = events.length;
+      document.getElementById('statDone').textContent = done;
+      document.getElementById('statPending').textContent = events.length - done;
+    }
+
+    function toggleDone(id, value) {
+      const ev = events.find(e => e.id === id);
+      if (ev) ev.done = value;
+      save();
+      if (value) confetti();
+      render();
+    }
+
+    function deleteEvent(id, li) {
+      li.classList.add('removing');
+      setTimeout(() => {
+        events = events.filter(e => e.id !== id);
+        save();
+        render();
+      }, 300);
+    }
+
+    function confetti() {
+      const items = ['🎀','💖','⭐','🌸','✨'];
+      for (let i = 0; i < 24; i++) {
+        const c = document.createElement('span');
+        c.className = 'confetti';
+        c.textContent = items[i % items.length];
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.animationDelay = Math.random() * 0.4 + 's';
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 2200);
+      }
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const day = document.getElementById('day').value;
+      const time = `${hourSel.value}:${document.getElementById('minute').value} ${document.getElementById('ampm').value}`;
+      if (!name) return;
+      events.push({ id: Date.now(), name, day, time, done: false });
+      save();
+      form.reset();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
